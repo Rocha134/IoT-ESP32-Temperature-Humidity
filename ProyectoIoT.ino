@@ -1,9 +1,5 @@
 //Project IoT
 //Francisco Rocha Juárez. A01730560
-//Horacio Iann Toquiantzi Escarcega. A01734839
-//Código tomado de clase con algunas implementaciones.
-//Este código no es creación 100% nuestra.
-//Código por el profesor Cesar Torres
 
 #include <Wire.h>                    // Library required for esp32 S2C communications
 #include <DHT.h>                     // Library required for DHT11 sensor
@@ -48,7 +44,7 @@ const char* server = "mqtt3.thingspeak.com";
 #ifdef USESECUREMQTT
   #include <WiFiClientSecure.h>
   #define mqttPort 8883
-  WiFiClientSecure client; 
+  WiFiClientSecure client;
 #else
   #include <WiFi.h>
   #define mqttPort 1883
@@ -57,7 +53,7 @@ const char* server = "mqtt3.thingspeak.com";
 
 // Credentials that allow to publish and subscribe to the ThingSpeak channel. It depends on your
 // ThinkSpeak account and the defined channels
-const char mqttUserName[]   = "IA8TJi4TCy4rHDMWKDQbEBw"; 
+const char mqttUserName[]   = "IA8TJi4TCy4rHDMWKDQbEBw";
 const char clientID[]       = "IA8TJi4TCy4rHDMWKDQbEBw";
 const char mqttPass[]       = "egUH11vG40ls/QecuPPIfoIA";
 
@@ -95,7 +91,7 @@ const char mqttPass[]       = "egUH11vG40ls/QecuPPIfoIA";
 
 
 // Initial state of the wifi connection
-int status = WL_IDLE_STATUS; 
+int status = WL_IDLE_STATUS;
 
 // The MQTT client is liked to the wifi connection
 PubSubClient mqttClient( client );
@@ -141,24 +137,24 @@ void setup() {
   // Some delay to allow serial set up.
   delay(3000);
 
-  dht.begin();                   // Initialize DHT11 sensor          
+  dht.begin();                   // Initialize DHT11 sensor
   initDisplay();                 // Initialize the OLED display
 
   pinMode(LEDPIN,OUTPUT);        //LEDPIN is going to be output
 
-  
+
   // Connect to the specified Wi-Fi network.
   connectWifi();
-  
+
   // Configure the MQTT client to connect with ThinkSpeak broker
-  mqttClient.setServer( server, mqttPort ); 
-  
+  mqttClient.setServer( server, mqttPort );
+
   // Set the MQTT message handler function.
   mqttClient.setCallback( mqttSubscriptionCallback );
-  // Set the buffer to handle the returned JSON. 
+  // Set the buffer to handle the returned JSON.
   // NOTE: A buffer overflow of the message buffer will result in your callback not being invoked.
   mqttClient.setBufferSize( 2048 );
-  
+
   // Use secure MQTT connections if defined.
   #ifdef USESECUREMQTT
     // Handle functionality differences of WiFiClientSecure library for different boards.
@@ -173,18 +169,18 @@ void loop() {
   if (WiFi.status() != WL_CONNECTED) {
       connectWifi();
   }
-  
+
   // Connect if MQTT client is not connected and resubscribe to channel updates.
   // ThinkSpeak broaker server : suscribe to the specified channel
   if (!mqttClient.connected()) {
-     mqttConnect(); 
+     mqttConnect();
      mqttSubscribe( channelID );
   }
-  
+
   // Call the loop to maintain connection to the server.
-  mqttClient.loop(); 
-  
-  // Update ThingSpeak channel periodically according to the specified rate. 
+  mqttClient.loop();
+
+  // Update ThingSpeak channel periodically according to the specified rate.
   // The update results in the message to the subscriber.
   if ( abs(millis() - lastPublishMillis) > updateInterval*1000) {
     // Sensors readings: temperature and humidity
@@ -197,8 +193,8 @@ void loop() {
       Serial.print(t);
       Serial.print(" ºC ");
       Serial.print(F("  Local humidity: "));
-      Serial.print(h); 
-      Serial.println(" %"); 
+      Serial.print(h);
+      Serial.println(" %");
     //If the temperature is greater than 20° then turn on the red led
     if (t>20){
       digitalWrite(LEDPIN,HIGH);
@@ -206,7 +202,7 @@ void loop() {
       digitalWrite(LEDPIN,LOW);
     }
     // Show the sensor readings in the OLED local display
-    showInDisplay(t,h);   
+    showInDisplay(t,h);
     //mqttPublish( channelID, (String("field1=")+String(WiFi.RSSI())) );
     mqttPublish( channelID, (String("field1=")+String(t) + String("&field2=")+String(h) ) );
     lastPublishMillis = millis();
@@ -245,7 +241,7 @@ void showInDisplay(float t, float h)
   display.write(167);
   display.setTextSize(2);
   display.print("C");
-  
+
   // display humidity
   display.setTextSize(1);
   display.setCursor(0, 35);
@@ -253,8 +249,8 @@ void showInDisplay(float t, float h)
   display.setTextSize(2);
   display.setCursor(0, 45);
   display.print(h);
-  display.print(" %"); 
-  display.display(); 
+  display.print(" %");
+  display.display();
 }
 
 // Function to connect to WiFi.
@@ -265,7 +261,7 @@ void connectWifi()
     while ( WiFi.status() != WL_CONNECTED ) {
     WiFi.begin( ssid, pass );
     delay( connectionDelay*1000 );
-    Serial.println( WiFi.status() ); 
+    Serial.println( WiFi.status() );
   }
   Serial.println( "Connected to Wi-Fi." );
 }
